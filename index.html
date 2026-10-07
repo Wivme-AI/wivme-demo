@@ -168,15 +168,18 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 
 .wv { position: relative; }
 .wv[data-surface="student"] .surface, .wv[data-surface="parent-chat"] .surface, .wv[data-surface="parent-web"] .surface {
-  width: 390px; height: min(calc(100% - 64px), 844px); border-radius: 44px;
+  flex: none; width: 390px; height: 844px; border-radius: 46px;
+  transform: scale(var(--phone-scale, 1)); transform-origin: center center;
   box-shadow: 0 0 0 11px #0E1122, 0 0 0 13px #2B3048, 0 0 0 14px rgba(15, 23, 51, .25), 0 44px 90px -30px rgba(15, 23, 51, .55);
 }
 .wv[data-surface="student"]::after, .wv[data-surface="parent-chat"]::after, .wv[data-surface="parent-web"]::after {
-  content: ""; position: absolute; left: 50%; top: calc(50% - min(50% - 32px, 422px) - 7px); z-index: 5;
-  width: 64px; height: 5px; border-radius: 3px; background: #2B3048; transform: translateX(-50%); pointer-events: none;
+  content: ""; position: absolute; left: 50%; z-index: 5; pointer-events: none;
+  top: calc(50% - (422px + 6px) * var(--phone-scale, 1));
+  width: calc(64px * var(--phone-scale, 1)); height: calc(5px * var(--phone-scale, 1));
+  border-radius: 3px; background: #2B3048; transform: translateX(-50%);
 }
 @media (max-width: 520px) {
-  .wv[data-surface="student"] .surface, .wv[data-surface="parent-chat"] .surface, .wv[data-surface="parent-web"] .surface { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+  .wv[data-surface="student"] .surface, .wv[data-surface="parent-chat"] .surface, .wv[data-surface="parent-web"] .surface { width: 100%; height: 100%; border-radius: 0; box-shadow: none; transform: none; }
   .wv[data-surface="student"]::after, .wv[data-surface="parent-chat"]::after, .wv[data-surface="parent-web"]::after { display: none; }
 }
 
@@ -6404,9 +6407,15 @@ const App = (() => {
   }
 
   let started = false;
+  function fitPhone() {
+    const s = Math.min(1, (window.innerHeight - 56) / 844, (window.innerWidth - 32) / 390);
+    document.documentElement.style.setProperty('--phone-scale', String(Math.max(0.4, s)));
+  }
   function start() {
     if (started) return;
     started = true;
+    fitPhone();
+    window.addEventListener('resize', fitPhone);
     const d = parse(readSaved());
     const p = parseHash(hashNow());
     if (d) { apply(d, true); lastSnap = readSaved() || ''; } else if (p) S.clock = startOf(p.surface);
